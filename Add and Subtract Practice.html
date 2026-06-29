@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Math: Add & Subtract!</title>
+    
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --dark: #2C3E50;
+            --light: #F7FFF7;
+            --purple: #9b59b6;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 90vh;
+            user-select: none;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 4px solid var(--secondary);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 32px;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+
+        /* --- Menu Screen --- */
+        #menuScreen {
+            display: block;
+        }
+
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #3b9b95;
+            transition: transform 0.1s, box-shadow 0.1s;
+            font-family: inherit;
+        }
+
+        .menu-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #3b9b95;
+        }
+
+        .menu-btn.add-btn { background-color: var(--secondary); box-shadow: 0 6px 0 #3b9b95; }
+        .menu-btn.add-btn:active { box-shadow: 0 0 0 #3b9b95; }
+
+        .menu-btn.miss-btn { background-color: var(--purple); box-shadow: 0 6px 0 #8e44ad; }
+        .menu-btn.miss-btn:active { box-shadow: 0 0 0 #8e44ad; }
+
+        .menu-btn.sub-btn { background-color: var(--primary); box-shadow: 0 6px 0 #c95555; }
+        .menu-btn.sub-btn:active { box-shadow: 0 0 0 #c95555; }
+
+        /* --- Game Screen --- */
+        #gameScreen {
+            display: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+        .icon-btn:hover { background-color: #e0e6ed; }
+
+        .streak-counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f39c12;
+            background: #fff3e0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 2px solid #f39c12;
+        }
+
+        .problem-display {
+            font-size: 55px;
+            font-weight: bold;
+            color: var(--dark);
+            margin: 20px 0 30px 0;
+            background: var(--accent);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
+            letter-spacing: 2px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: white;
+            color: var(--dark);
+            border: 4px solid var(--secondary);
+            padding: 25px 10px;
+            font-size: 36px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 0 var(--secondary);
+            font-family: inherit;
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--secondary);
+        }
+
+        .option-btn.correct {
+            background-color: #2ecc71 !important;
+            border-color: #27ae60 !important;
+            color: white !important;
+            box-shadow: 0 6px 0 #27ae60 !important;
+            transform: scale(1.05);
+        }
+
+        .option-btn.wrong {
+            background-color: #ecf0f1;
+            border-color: #bdc3c7;
+            color: #95a5a6;
+            box-shadow: 0 2px 0 #bdc3c7;
+            transform: translateY(4px);
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) translateY(4px); }
+            25% { transform: translateX(-5px) translateY(4px); }
+            50% { transform: translateX(5px) translateY(4px); }
+            75% { transform: translateX(-5px) translateY(4px); }
+        }
+
+        .confetti {
+            position: absolute;
+            font-size: 40px;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+
+        @media (max-width: 480px) {
+            .game-header { flex-direction: column; gap: 15px; }
+            .streak-counter { width: 100%; box-sizing: border-box; text-align: center; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="menuScreen">
+        <h1>✨ Magic Math! ✨</h1>
+        <p class="subtitle">Choose your adventure:</p>
+        <div class="menu-grid">
+            <button class="menu-btn add-btn" onclick="startGame(1)">➕ Regular Addition</button>
+            <button class="menu-btn miss-btn" onclick="startGame(2)">🕵️‍♂️ Find the Missing Number</button>
+            <button class="menu-btn sub-btn" onclick="startGame(3)">➖ Subtraction</button>
+        </div>
+    </div>
+
+    <div id="gameScreen">
+        <div class="game-header">
+            <div class="btn-group">
+                <button class="icon-btn" onclick="showMenu()">🔙 Menu</button>
+                <button class="icon-btn" id="muteBtn" onclick="toggleMusic()">🎵 On</button>
+            </div>
+            <div class="streak-counter">⭐ Streak: <span id="streakDisplay">0</span> | 🏆 Best: <span id="highStreakDisplay">0</span></div>
+        </div>
+
+        <div class="problem-display" id="problemDisplay">
+            </div>
+
+        <div class="options-grid" id="optionsGrid">
+            </div>
+    </div>
+
+</div>
+
+<script>
+    // Modes: 1 = Addition, 2 = Missing Number, 3 = Subtraction
+    let currentMode = 1; 
+    let currentStreak = 0;
+    let highestStreak = 0; 
+    let isTransitioning = false;
+
+    // --- Audio Engine (Web Audio API) ---
+    let audioCtx;
+    let bgmInterval;
+    let isMusicPlaying = true;
+
+    // Pentatonic scale for light, happy background music
+    const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playSuccessSound() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.type = 'triangle'; 
+        
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.1);
+        osc.frequency.setValueAtTime(783.99, now + 0.2);
+        
+        gainNode.gain.setValueAtTime(1, now);
+        gainNode.gain.linearRampToValueAtTime(0.15, now + 0.05); 
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        
+        osc.start(now);
+        osc.stop(now + 0.6);
+    }
+
+    function playWrongSound() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.type = 'sine'; 
+        
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(200, now); 
+        osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+        
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.1, now + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        
+        osc.start(now);
+        osc.stop(now + 0.2);
+    }
+
+    function startBackgroundMusic() {
+        if (!audioCtx || !isMusicPlaying || bgmInterval) return;
+        
+        bgmInterval = setInterval(() => {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.type = 'sine'; 
+            
+            const randomFreq = pentatonicScale[Math.floor(Math.random() * pentatonicScale.length)];
+            osc.frequency.value = randomFreq;
+            
+            const now = audioCtx.currentTime;
+            gainNode.gain.setValueAtTime(0.4, now);
+            gainNode.gain.linearRampToValueAtTime(0.03, now + 0.1); 
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.5); 
+            
+            osc.start(now);
+            osc.stop(now + 1.5);
+        }, 450);
+    }
+
+    function stopBackgroundMusic() {
+        if (bgmInterval) {
+            clearInterval(bgmInterval);
+            bgmInterval = null;
+        }
+    }
+
+    function toggleMusic() {
+        isMusicPlaying = !isMusicPlaying;
+        const muteBtn = document.getElementById('muteBtn');
+        if (isMusicPlaying) {
+            muteBtn.innerText = "🎵 On";
+            startBackgroundMusic();
+        } else {
+            muteBtn.innerText = "🔇 Off";
+            stopBackgroundMusic();
+        }
+    }
+
+    // --- Navigation ---
+    function startGame(mode) {
+        currentMode = mode;
+        
+        initAudio(); 
+        if (isMusicPlaying) startBackgroundMusic();
+
+        currentStreak = 0;
+        document.getElementById('streakDisplay').innerText = currentStreak;
+        
+        document.getElementById('menuScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        
+        // Match the border color of the game to the selected mode
+        const gameContainer = document.querySelector('.container');
+        if (mode === 1) gameContainer.style.borderColor = "var(--secondary)";
+        if (mode === 2) gameContainer.style.borderColor = "var(--purple)";
+        if (mode === 3) gameContainer.style.borderColor = "var(--primary)";
+
+        generateProblem();
+    }
+
+    function showMenu() {
+        stopBackgroundMusic();
+        document.getElementById('gameScreen').style.display = 'none';
+        document.getElementById('menuScreen').style.display = 'block';
+        
+        highestStreak = 0;
+        document.getElementById('highStreakDisplay').innerText = highestStreak;
+        document.querySelector('.container').style.borderColor = "var(--secondary)";
+    }
+
+    // --- Math Logic ---
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function generateProblem() {
+        isTransitioning = false;
+        
+        let correctAnswer;
+        let promptText = "";
+
+        if (currentMode === 1) {
+            // Mode 1: Standard 1x1 digit addition
+            let a = getRandomInt(1, 9);
+            let b = getRandomInt(1, 9);
+            correctAnswer = a + b;
+            promptText = `${a} + ${b} = ?`;
+            
+        } else if (currentMode === 2) {
+            // Mode 2: Find the missing number (1x? Addition)
+            let a = getRandomInt(1, 9);
+            let b = getRandomInt(1, 9);
+            let sum = a + b;
+            
+            // Randomly choose which side is missing
+            if (Math.random() > 0.5) {
+                correctAnswer = b;
+                promptText = `${a} + ? = ${sum}`;
+            } else {
+                correctAnswer = a;
+                promptText = `? + ${b} = ${sum}`;
+            }
+            
+        } else if (currentMode === 3) {
+            // Mode 3: Subtraction (Answers between 1-10)
+            correctAnswer = getRandomInt(1, 10);
+            let b = getRandomInt(1, 9);
+            let a = correctAnswer + b; // Guarantees answer is always positive and 1-10
+            promptText = `${a} - ${b} = ?`;
+        }
+
+        document.getElementById('problemDisplay').innerText = promptText;
+
+        // Smart Distractor Generation
+        let options = new Set();
+        options.add(correctAnswer);
+
+        // Add common counting errors (off by 1 or 2)
+        options.add(correctAnswer + 1);
+        if (correctAnswer > 1) {
+            options.add(correctAnswer - 1);
+        }
+        if (correctAnswer > 2 && Math.random() > 0.5) {
+            options.add(correctAnswer - 2);
+        } else {
+            options.add(correctAnswer + 2);
+        }
+
+        // Fill remaining options with random plausible numbers
+        while(options.size < 4) {
+            let offset = getRandomInt(-3, 4);
+            let randomWrong = correctAnswer + offset;
+            // Prevent zeroes, negatives, or duplicates
+            if (randomWrong > 0 && randomWrong !== correctAnswer) {
+                options.add(randomWrong);
+            }
+        }
+
+        let optionsArray = shuffleArray(Array.from(options));
+        const grid = document.getElementById('optionsGrid');
+        grid.innerHTML = ''; 
+
+        optionsArray.forEach(opt => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = (e) => handleGuess(btn, opt === correctAnswer, e);
+            grid.appendChild(btn);
+        });
+    }
+
+    function handleGuess(btn, isCorrect, event) {
+        if (isTransitioning || btn.classList.contains('wrong')) return;
+
+        if (isCorrect) {
+            isTransitioning = true;
+            btn.classList.add('correct');
+            playSuccessSound();
+            
+            currentStreak++;
+            document.getElementById('streakDisplay').innerText = currentStreak;
+
+            if (currentStreak > highestStreak) {
+                highestStreak = currentStreak;
+                document.getElementById('highStreakDisplay').innerText = highestStreak;
+            }
+
+            createSparkle(event.clientX, event.clientY);
+
+            setTimeout(generateProblem, 1000);
+        } else {
+            btn.classList.add('wrong');
+            playWrongSound();
+            
+            currentStreak = 0; 
+            document.getElementById('streakDisplay').innerText = currentStreak;
+        }
+    }
+
+    // --- Fun Visual Effects ---
+    function createSparkle(x, y) {
+        const emojis = ['⭐', '🎉', '🚀', '🌟', '✨', '🎈'];
+        const sparkle = document.createElement('div');
+        sparkle.innerText = emojis[getRandomInt(0, emojis.length - 1)];
+        sparkle.className = 'confetti';
+        sparkle.style.left = (x - 20) + 'px';
+        sparkle.style.top = (y - 20) + 'px';
+        
+        document.body.appendChild(sparkle);
+
+        setTimeout(() => {
+            sparkle.remove();
+        }, 1000);
+    }
+
+</script>
+
+</body>
+</html>
